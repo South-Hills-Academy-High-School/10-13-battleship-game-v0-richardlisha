@@ -16,29 +16,9 @@ function moveBoat (boatArray: Sprite[]) {
 let iterator = 0
 let cursor: Sprite = null
 let moveBoatflag = 0
-moveBoatflag = 1
-tiles.setCurrentTilemap(tilemap`level1`)
-cursor = sprites.create(img`
-    1 1 1 1 1 . . . . . . 1 1 1 1 1 
-    1 1 1 . . . . . . . . . . 1 1 1 
-    1 1 . . . . . . . . . . . . 1 1 
-    1 . . . . . . . . . . . . . . 1 
-    1 . . . . . . . . . . . . . . 1 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    . . . . . . . . . . . . . . . . 
-    1 . . . . . . . . . . . . . . 1 
-    1 . . . . . . . . . . . . . . 1 
-    1 1 . . . . . . . . . . . . 1 1 
-    1 1 1 . . . . . . . . . . 1 1 1 
-    1 1 1 . . . . . . . . . . 1 1 1 
-    1 1 1 1 1 . . . . . . 1 1 1 1 1 
-    `, SpriteKind.Player)
-grid.snap(cursor)
-grid.moveWithButtons(cursor)
-let smallBoatArray = [sprites.create(img`
+let boatRotateArray = ["up", "up", "up"]
+let currentBoat = 0
+let boatSpriteArray = [[sprites.create(img`
     . . . . . b b b b b b . . . . . 
     . . . b b 9 9 9 9 9 9 b b . . . 
     . . b b 9 9 9 9 9 9 9 9 b b . . 
@@ -72,9 +52,82 @@ let smallBoatArray = [sprites.create(img`
     . . b d 5 d 3 3 3 3 5 5 b b . . 
     . . . b b 5 5 5 5 5 5 b b . . . 
     . . . . . b b b b b b . . . . . 
-    `, SpriteKind.Player)]
+    `, SpriteKind.Player)], [sprites.create(img`
+    . . . . . b b b b b b . . . . . 
+    . . . b b 9 9 9 9 9 9 b b . . . 
+    . . b b 9 9 9 9 9 9 9 9 b b . . 
+    . b b 9 d 9 9 9 9 9 9 9 9 b b . 
+    . b 9 d 9 9 9 9 9 1 1 1 9 9 b . 
+    b 9 d d 9 9 9 9 9 1 1 1 9 9 9 b 
+    b 9 d 9 9 9 9 9 9 1 1 1 9 9 9 b 
+    b 9 3 9 9 9 9 9 9 9 9 9 1 9 9 b 
+    b 5 3 d 9 9 9 9 9 9 9 9 9 9 9 b 
+    b 5 3 3 9 9 9 9 9 9 9 9 9 d 9 b 
+    b 5 d 3 3 9 9 9 9 9 9 9 d d 9 b 
+    . b 5 3 3 3 d 9 9 9 9 d d 5 b . 
+    . b d 5 3 3 3 3 3 3 3 d 5 b b . 
+    . . b d 5 d 3 3 3 3 5 5 b b . . 
+    . . . b b 5 5 5 5 5 5 b b . . . 
+    . . . . . b b b b b b . . . . . 
+    `, SpriteKind.Player), sprites.create(img`
+    . . . . . b b b b b b . . . . . 
+    . . . b b 9 9 9 9 9 9 b b . . . 
+    . . b b 9 9 9 9 9 9 9 9 b b . . 
+    . b b 9 d 9 9 9 9 9 9 9 9 b b . 
+    . b 9 d 9 9 9 9 9 1 1 1 9 9 b . 
+    b 9 d d 9 9 9 9 9 1 1 1 9 9 9 b 
+    b 9 d 9 9 9 9 9 9 1 1 1 9 9 9 b 
+    b 9 3 9 9 9 9 9 9 9 9 9 1 9 9 b 
+    b 5 3 d 9 9 9 9 9 9 9 9 9 9 9 b 
+    b 5 3 3 9 9 9 9 9 9 9 9 9 d 9 b 
+    b 5 d 3 3 9 9 9 9 9 9 9 d d 9 b 
+    . b 5 3 3 3 d 9 9 9 9 d d 5 b . 
+    . b d 5 3 3 3 3 3 3 3 d 5 b b . 
+    . . b d 5 d 3 3 3 3 5 5 b b . . 
+    . . . b b 5 5 5 5 5 5 b b . . . 
+    . . . . . b b b b b b . . . . . 
+    `, SpriteKind.Player), sprites.create(img`
+    . . . . . b b b b b b . . . . . 
+    . . . b b 9 9 9 9 9 9 b b . . . 
+    . . b b 9 9 9 9 9 9 9 9 b b . . 
+    . b b 9 d 9 9 9 9 9 9 9 9 b b . 
+    . b 9 d 9 9 9 9 9 1 1 1 9 9 b . 
+    b 9 d d 9 9 9 9 9 1 1 1 9 9 9 b 
+    b 9 d 9 9 9 9 9 9 1 1 1 9 9 9 b 
+    b 9 3 9 9 9 9 9 9 9 9 9 1 9 9 b 
+    b 5 3 d 9 9 9 9 9 9 9 9 9 9 9 b 
+    b 5 3 3 9 9 9 9 9 9 9 9 9 d 9 b 
+    b 5 d 3 3 9 9 9 9 9 9 9 d d 9 b 
+    . b 5 3 3 3 d 9 9 9 9 d d 5 b . 
+    . b d 5 3 3 3 3 3 3 3 d 5 b b . 
+    . . b d 5 d 3 3 3 3 5 5 b b . . 
+    . . . b b 5 5 5 5 5 5 b b . . . 
+    . . . . . b b b b b b . . . . . 
+    `, SpriteKind.Player)]]
+tiles.setCurrentTilemap(tilemap`level1`)
+moveBoatflag = 1
+cursor = sprites.create(img`
+    3 3 3 3 3 . . . . . . 3 3 3 3 3 
+    3 3 3 . . . . . . . . . . 3 3 3 
+    3 3 . . . . . . . . . . . . 3 3 
+    3 . . . . . . . . . . . . . . 3 
+    3 . . . . . . . . . . . . . . 3 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    . . . . . . . . . . . . . . . . 
+    3 . . . . . . . . . . . . . . 3 
+    3 . . . . . . . . . . . . . . 3 
+    3 3 . . . . . . . . . . . . 3 3 
+    3 3 3 . . . . . . . . . . 3 3 3 
+    3 3 3 . . . . . . . . . . 3 3 3 
+    3 3 3 3 3 . . . . . . 3 3 3 3 3 
+    `, SpriteKind.Player)
+grid.snap(cursor)
+grid.moveWithButtons(cursor)
 game.onUpdate(function () {
     if (moveBoatflag == 1) {
-        moveBoat(smallBoatArray)
+        moveBoat(boatSpriteArray[currentBoat])
     }
 })
